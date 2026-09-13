@@ -1,0 +1,71 @@
+# Manifest-as-evidence, not a live dependency for the hackathon demo.
+# The demo runs via `npm run demo` locally. This shows how the same
+# container would run on Amadeus's own Kubernetes-based infrastructure,
+# and gives the autoscaling story a concrete artifact to point at during
+# the chaos-testing scene ("if load spikes during a disruption event,
+# this is the HPA that would respond").
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: travelbud-app
+  labels:
+    app: travelbud
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: travelbud
+  template:
+    metadata:
+      labels:
+        app: travelbud
+    spec:
+      containers:
+        - name: travelbud
+          image: travelbud:latest
+          ports:
+            - containerPort: 4173
+          env:
+            - name: ANTHROPIC_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: travelbud-secrets
+                  key: anthropic-api-key
+                  optional: true # missing key -> app runs, AI healing reports UNAVAILABLE
+          readinessProbe:
+            httpGet: { path: /index.html, port: 4173 }
+            initialDelaySeconds: 3
+          livenessProbe:
+            httpGet: { path: /index.html, port: 4173 }
+            initialDelaySeconds: 5
+          resources:
+            requests: { cpu: "100m", memory: "128Mi" }
+            limits: { cpu: "500m", memory: "256Mi" }
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: travelbud-svc
+spec:
+  selector:
+    app: travelbud
+  ports:
+    - port: 80
+      targetPort: 4173
+---
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: travelbud-hpa
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: travelbud-app
+  minReplicas: 2
+  maxReplicas: 8
+  metrics:
+    - type: Resource
+      resource:
+        name: cpu
+        target: { type: Utilization, averageUtilization: 65 }

@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Trip disruption — TravelGuard Air</title>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<div class="topbar" id="topbar"></div>
+<div class="app-shell">
+  <h1>Your trip</h1>
+  <p class="lede">Live flight status is checked whenever this page loads.</p>
+
+  <div id="statusBanner"></div>
+
+  <div class="card">
+    <h2>Alternative flights</h2>
+    <div id="altList"></div>
+  </div>
+</div>
+<script src="app.js"></script>
+<script>
+  renderTopbar();
+  const booking = getBooking();
+  const flightId = booking.flight ? booking.flight.id : 'AI203';
+  const status = getFlightStatus(flightId);
+  const banner = document.getElementById('statusBanner');
+  const altList = document.getElementById('altList');
+
+  if (!status.ok) {
+    // TruthGuard: the live source is unavailable. The system must say
+    // so plainly rather than inventing a status or silently offering
+    // rebooking as if everything were verified.
+    banner.innerHTML = `<div class="banner danger">
+      <strong>Flight status: UNVERIFIED</strong><br>
+      ${status.reason}. Rebooking is disabled until a trusted status source is available.
+    </div>`;
+    altList.innerHTML = `<p style="color:var(--text-dim)">No alternative flights are shown while flight status is unverified — offering a rebooking option here without a confirmed disruption would risk moving a traveler off a flight that is still operating normally.</p>`;
+  } else {
+    banner.innerHTML = `<div class="banner warn">
+      <strong>Flight ${status.flightId} is CANCELLED.</strong><br>
+      Reason: ${status.reason}. We've found alternative flights below.
+    </div>`;
+    altList.innerHTML = ALTERNATIVES.map(f => `
+      <div class="flight-row">
+        <div>
+          <div class="route">${f.id} — ${f.depart} → ${f.arrive}</div>
+          <div class="meta">${f.seats} seats left</div>
+        </div>
+        <div style="text-align:right">
+          <div class="price">₹${f.price.toLocaleString('en-IN')}</div>
+          <button class="btn" style="margin-top:8px">Rebook this flight</button>
+        </div>
+      </div>
+    `).join('');
+  }
+</script>
+</body>
+</html>

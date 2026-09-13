@@ -1,0 +1,166 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+
+:root {
+  --navy: #10243e;
+  --navy-2: #17324f;
+  --amber: #f2a93b;
+  --amber-dark: #c98a1f;
+  --red: #c1432e;
+  --green: #2f8f5b;
+  --bg: #f5f6f8;
+  --paper: #ffffff;
+  --text: #1b1f27;
+  --text-dim: #5b6472;
+  --line: #dde1e7;
+  --radius: 6px;
+}
+
+* { box-sizing: border-box; }
+
+html, body {
+  margin: 0;
+  padding: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Inter', system-ui, sans-serif;
+  font-size: 16px;
+  line-height: 1.5;
+}
+
+a { color: inherit; }
+
+.app-shell {
+  max-width: 760px;
+  margin: 0 auto;
+  padding: 0 24px 80px;
+}
+
+/* Top bar */
+.topbar {
+  background: var(--navy);
+  color: #fff;
+  padding: 18px 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.topbar .brand {
+  font-weight: 800;
+  font-size: 19px;
+  letter-spacing: -0.02em;
+}
+.topbar .brand span { color: var(--amber); }
+.topbar .chaos-toggle {
+  font-size: 13px;
+  color: #b9c3d1;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.topbar .chaos-toggle input { accent-color: var(--red); }
+
+/* Step rail */
+.step-rail {
+  display: flex;
+  align-items: center;
+  margin: 32px 0 40px;
+  padding: 0;
+}
+.step-rail .step {
+  flex: 1;
+  text-align: center;
+  font-size: 13px;
+  color: var(--text-dim);
+  position: relative;
+  padding-top: 22px;
+}
+.step-rail .step::before {
+  content: '';
+  position: absolute;
+  top: 6px;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: var(--line);
+}
+.step-rail .step.done::before { background: var(--green); }
+.step-rail .step.active::before { background: var(--amber); }
+.step-rail .step.active { color: var(--text); font-weight: 600; }
+
+h1 { font-size: 26px; font-weight: 800; letter-spacing: -0.02em; margin: 0 0 6px; }
+h2 { font-size: 18px; font-weight: 700; margin: 0 0 14px; }
+p.lede { color: var(--text-dim); margin: 0 0 28px; max-width: 60ch; }
+
+.card {
+  background: var(--paper);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 24px;
+  margin-bottom: 16px;
+}
+
+label { display: block; font-size: 13px; font-weight: 600; margin-bottom: 6px; color: var(--text-dim); }
+input, select {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  font-size: 15px;
+  font-family: inherit;
+  margin-bottom: 16px;
+  background: #fff;
+}
+input:focus, select:focus, button:focus, a.btn:focus {
+  outline: 2px solid var(--amber);
+  outline-offset: 2px;
+}
+
+.btn {
+  display: inline-block;
+  background: var(--amber);
+  color: var(--navy);
+  border: none;
+  padding: 12px 22px;
+  border-radius: var(--radius);
+  font-weight: 700;
+  font-size: 15px;
+  cursor: pointer;
+  text-decoration: none;
+}
+.btn:hover { background: var(--amber-dark); }
+.btn.secondary {
+  background: transparent;
+  color: var(--navy);
+  border: 1px solid var(--line);
+}
+.btn.danger { background: var(--red); color: #fff; }
+
+.flight-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 16px;
+  margin-bottom: 12px;
+}
+.flight-row .route { font-weight: 700; }
+.flight-row .meta { font-size: 13px; color: var(--text-dim); margin-top: 2px; }
+.flight-row .price { font-weight: 700; font-size: 18px; }
+
+.banner {
+  border-radius: var(--radius);
+  padding: 14px 16px;
+  font-size: 14px;
+  margin-bottom: 20px;
+  border: 1px solid transparent;
+}
+.banner.warn { background: #fff4e0; border-color: #f0c876; color: #7a5a10; }
+.banner.danger { background: #fbe8e5; border-color: #e6a99b; color: #7d2a1c; }
+.banner.ok { background: #e7f5ed; border-color: #a9d9be; color: #205c3c; }
+.banner.info { background: #eaf1f9; border-color: #b9d0e8; color: #1c4570; }
+
+.summary-line { display: flex; justify-content: space-between; padding: 6px 0; font-size: 14px; border-bottom: 1px dashed var(--line); }
+.summary-line:last-child { border-bottom: none; font-weight: 700; padding-top: 12px; }
+
+footer.note { margin-top: 40px; font-size: 12px; color: var(--text-dim); }

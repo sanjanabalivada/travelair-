@@ -1,0 +1,34 @@
+{
+  "name": "travelbud",
+  "version": "2.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Autonomous QA demo: self-healing Playwright suite + fail-closed TruthGuard behaviour for a React travel booking flow.",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "test": "playwright test",
+    "report": "node scripts/build-report.js",
+    "demo": "npm run test --silent; npm run report"
+  },
+  "dependencies": {
+    "@radix-ui/react-label": "^2.1.15",
+    "class-variance-authority": "^0.7.1",
+    "clsx": "^2.1.1",
+    "framer-motion": "^13.2.0",
+    "lucide-react": "^1.45.0",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "react-router-dom": "^6.26.2",
+    "tailwind-merge": "^3.6.0"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.48.0",
+    "@vitejs/plugin-react": "^4.3.2",
+    "autoprefixer": "^10.5.6",
+    "postcss": "^8.5.28",
+    "tailwindcss": "^3.4.19",
+    "vite": "^5.4.8"
+  }
+}

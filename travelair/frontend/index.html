@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Search flights — TravelGuard Air</title>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<div class="topbar" id="topbar"></div>
+<div class="app-shell">
+  <div class="step-rail" id="stepRail"></div>
+  <h1>Where are you flying?</h1>
+  <p class="lede">Search live availability. This is a demo booking flow used to exercise TravelGuard's autonomous QA loop — not a real reservation system.</p>
+
+  <div class="card">
+    <label for="from">From</label>
+    <select id="from"></select>
+    <label for="to">To</label>
+    <select id="to"></select>
+    <label for="date">Departure date</label>
+    <input type="date" id="date" value="2026-09-12">
+    <button class="btn" id="searchBtn">Search flights</button>
+  </div>
+
+  <footer class="note">TravelGuard Air — demo data only. No live fares are queried.</footer>
+</div>
+<script src="app.js"></script>
+<script>
+  renderTopbar();
+  renderSteps(1);
+
+  const fromSel = document.getElementById('from');
+  const toSel = document.getElementById('to');
+  const cityOptions = c => CITIES.map(city => `<option value="${city.code}">${city.name} (${city.code})</option>`).join('');
+  fromSel.innerHTML = cityOptions();
+  toSel.innerHTML = cityOptions();
+  fromSel.value = 'BLR';
+  toSel.value = 'BOM';
+
+  document.getElementById('searchBtn').addEventListener('click', () => {
+    if (fromSel.value === toSel.value) {
+      alert('Origin and destination can\'t be the same city.');
+      return;
+    }
+    setBooking({ route: { from: fromSel.value, to: toSel.value } });
+    window.location.href = 'select.html';
+  });
+</script>
+</body>
+</html>

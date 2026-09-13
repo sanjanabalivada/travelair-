@@ -1,0 +1,133 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>TravelBud — Quality Dashboard</title>
+<link rel="stylesheet" href="../frontend/styles.css">
+<style>
+  .app-shell { max-width: 900px; }
+  .gate-hero { display:flex; align-items:center; gap:28px; margin-bottom:24px; }
+  .gate-score { font-size:56px; font-weight:800; letter-spacing:-0.03em; }
+  .gate-pill { display:inline-block; padding:6px 14px; border-radius:999px; font-weight:700; font-size:13px; }
+  .gate-pill.PASS { background:#e7f5ed; color:#205c3c; }
+  .gate-pill.CONDITIONAL { background:#fff4e0; color:#7a5a10; }
+  .gate-pill.BLOCK { background:#fbe8e5; color:#7d2a1c; }
+  .gate-pill.UNVERIFIED { background:#eaf1f9; color:#1c4570; }
+  table { width:100%; border-collapse:collapse; font-size:14px; }
+  th, td { text-align:left; padding:10px 8px; border-bottom:1px solid var(--line); }
+  th { color:var(--text-dim); font-weight:600; font-size:12px; }
+  .status-pill { padding:3px 9px; border-radius:999px; font-size:12px; font-weight:700; }
+  .status-pill.passed { background:#e7f5ed; color:#205c3c; }
+  .status-pill.failed, .status-pill.timedOut, .status-pill.interrupted { background:#fbe8e5; color:#7d2a1c; }
+  .iso-tag { font-size:11px; color:var(--text-dim); }
+  pre.log-entry { background:#0f1117; color:#d5d9e0; padding:12px 14px; border-radius:6px; font-size:12px; overflow-x:auto; margin-bottom:10px; }
+</style>
+</head>
+<body>
+<div class="topbar"><div class="brand">Travel<span>Bud</span></div></div>
+<div class="app-shell" style="padding-top:32px">
+  <h1>Quality dashboard</h1>
+  <p class="lede">Evidence generated from the most recent autonomous QA run. Mapped to ISO/IEC 25010 quality characteristics and ISO/IEC/IEEE 29119 test-process reporting conventions.</p>
+
+  <div class="card gate-hero">
+    <div>
+      <div class="gate-score" id="scoreValue">—</div>
+      <div style="color:var(--text-dim); font-size:13px">Journey Confidence</div>
+    </div>
+    <div>
+      <span class="gate-pill" id="gatePill">—</span>
+      <div style="margin-top:10px; font-size:13px" id="aiModeLine"></div>
+    </div>
+  </div>
+
+  <div style="display:flex; gap:10px; margin-bottom:20px" id="modeBadges"></div>
+
+  <div class="banner info" id="modeBanner" style="display:none"></div>
+
+  <div class="card">
+    <h2>Risk-based prioritization <span class="iso-tag">— deterministic, no LLM involved</span></h2>
+    <table>
+      <thead><tr><th>Priority</th><th>Journey</th><th>Risk score</th><th>Status</th></tr></thead>
+      <tbody id="riskRows"></tbody>
+    </table>
+  </div>
+
+  <div class="card">
+    <h2>Test results <span class="iso-tag">— ISO/IEC/IEEE 29119 test execution record</span></h2>
+    <table>
+      <thead><tr><th>Journey</th><th>ISO 25010 characteristic</th><th>Status</th></tr></thead>
+      <tbody id="testRows"></tbody>
+    </table>
+  </div>
+
+  <div class="card">
+    <h2>Self-healing evidence log</h2>
+    <div id="healingLog"></div>
+  </div>
+
+  <footer class="note">
+    Journey Confidence = 100 − 15 per failed journey − 5 per AI-accepted self-heal (a heal is a real recovery, but every healing event is itself signal that something drifted and should be reviewed). This is an observed demo metric, not a validated statistical model.
+  </footer>
+</div>
+
+<script>
+  const ISO_MAP = {
+    'completes a booking end to end (baseline, no application drift)': 'Functional Suitability',
+    'self-heals when the confirm control is renamed under the test (UI drift)': 'Reliability — Self-Healing',
+    'reports UNVERIFIED instead of a fabricated status when the flight-status API is down': 'Security & Data Trust',
+    'shows a real disruption and rebooking options when the status API is healthy': 'Functional Suitability',
+  };
+
+  fetch('data.json').then(r => r.json()).then(data => {
+    document.getElementById('scoreValue').textContent = data.journeyConfidence + ' / 100';
+    const pill = document.getElementById('gatePill');
+    pill.textContent = data.releaseGate;
+    pill.classList.add(data.releaseGate);
+    document.getElementById('aiModeLine').textContent = 'AI healing: ' + data.aiMode;
+
+    const aiBadgeClass = data.aiMode.startsWith('UNAVAILABLE') ? 'banner warn' : 'banner ok';
+    document.getElementById('modeBadges').innerHTML = `
+      <div class="${aiBadgeClass}" style="margin:0; padding:8px 14px; font-size:12px"><strong>AI MODE</strong> ${data.aiMode.split(' — ')[0]}</div>
+      <div class="banner warn" style="margin:0; padding:8px 14px; font-size:12px"><strong>DATA MODE</strong> MOCK</div>
+    `;
+
+    const priorityRank = { P0: 0, P1: 1, P2: 2, P3: 3 };
+    const riskRows = document.getElementById('riskRows');
+    riskRows.innerHTML = (data.risk || []).map(r => `
+      <tr>
+        <td><span class="status-pill ${r.priority === 'P0' ? 'failed' : 'passed'}">${r.priority}</span></td>
+        <td>${r.journey}</td>
+        <td>${r.riskScore}</td>
+        <td><span class="status-pill ${r.status}">${r.status}</span></td>
+      </tr>
+    `).join('');
+
+    if (data.aiMode.startsWith('UNAVAILABLE')) {
+      const b = document.getElementById('modeBanner');
+      b.style.display = 'block';
+      b.className = 'banner warn';
+      b.innerHTML = '<strong>Deterministic fallback mode.</strong> No ANTHROPIC_API_KEY was configured for this run, so AI-assisted self-healing did not run. Any UI-drift failures were reported as real failures — the system did not fabricate a pass.';
+    }
+
+    const rows = document.getElementById('testRows');
+    rows.innerHTML = data.testDetail.map(t => `
+      <tr>
+        <td>${t.title}</td>
+        <td class="iso-tag">${ISO_MAP[t.title] || '—'}</td>
+        <td><span class="status-pill ${t.status}">${t.status}</span></td>
+      </tr>
+    `).join('');
+
+    const log = document.getElementById('healingLog');
+    if (!data.healing.events.length) {
+      log.innerHTML = '<p style="color:var(--text-dim)">No healing events recorded in this run.</p>';
+    } else {
+      log.innerHTML = data.healing.events.map(e => `<pre class="log-entry">${JSON.stringify(e, null, 2)}</pre>`).join('');
+    }
+  }).catch(() => {
+    document.querySelector('.app-shell').insertAdjacentHTML('afterbegin',
+      '<div class="banner danger">No data.json found. Run <code>npm run demo</code> first.</div>');
+  });
+</script>
+</body>
+</html>

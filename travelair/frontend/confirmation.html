@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Booking confirmed — TravelGuard Air</title>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<div class="topbar" id="topbar"></div>
+<div class="app-shell">
+  <div class="step-rail" id="stepRail"></div>
+  <div class="banner ok" id="confirmBanner">Booking confirmed.</div>
+  <div class="card">
+    <div id="summary"></div>
+  </div>
+  <a class="btn secondary" href="disruption.html">Simulate a disruption for this trip →</a>
+</div>
+<script src="app.js"></script>
+<script>
+  renderTopbar();
+  renderSteps(5);
+  const booking = getBooking();
+  if (!booking.confirmedAt) window.location.href = 'select.html';
+
+  document.getElementById('summary').innerHTML = `
+    <div class="summary-line"><span>Flight</span><span>${booking.flight.id} · ${booking.flight.depart} → ${booking.flight.arrive}</span></div>
+    <div class="summary-line"><span>Passenger</span><span>${booking.passenger.name}</span></div>
+    <div class="summary-line"><span>Confirmed</span><span>${new Date(booking.confirmedAt).toLocaleString()}</span></div>
+  `;
+</script>
+</body>
+</html>

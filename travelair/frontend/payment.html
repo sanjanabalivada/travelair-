@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Payment — TravelGuard Air</title>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<div class="topbar" id="topbar"></div>
+<div class="app-shell">
+  <div class="step-rail" id="stepRail"></div>
+  <h1>Payment</h1>
+  <p class="lede">Card details are mocked — no real payment is processed in this demo.</p>
+
+  <div class="card">
+    <div id="summary"></div>
+  </div>
+
+  <div class="card">
+    <label for="cardNumber">Card number</label>
+    <input type="text" id="cardNumber" placeholder="4242 4242 4242 4242" value="4242 4242 4242 4242">
+    <label for="expiry">Expiry</label>
+    <input type="text" id="expiry" placeholder="MM/YY" value="12/29">
+    <button class="btn" id="confirmBtn"></button>
+  </div>
+</div>
+<script src="app.js"></script>
+<script>
+  renderTopbar();
+  renderSteps(4);
+  const booking = getBooking();
+  if (!booking.flight || !booking.passenger) window.location.href = 'select.html';
+
+  document.getElementById('summary').innerHTML = `
+    <div class="summary-line"><span>Flight</span><span>${booking.flight.id} · ${booking.flight.depart} → ${booking.flight.arrive}</span></div>
+    <div class="summary-line"><span>Passenger</span><span>${booking.passenger.name}</span></div>
+    <div class="summary-line"><span>Total</span><span>₹${booking.flight.price.toLocaleString('en-IN')}</span></div>
+  `;
+
+  // This is the control the self-healing test suite depends on. Its
+  // accessible name changes when BREAK_MODE is on, simulating an
+  // application change shipped without updating the test suite.
+  const confirmBtn = document.getElementById('confirmBtn');
+  confirmBtn.textContent = confirmButtonLabel();
+  confirmBtn.id = 'confirmBtn'; // keep id stable; only the label/name drifts
+  confirmBtn.addEventListener('click', () => {
+    setBooking({ confirmedAt: new Date().toISOString() });
+    window.location.href = 'confirmation.html';
+  });
+</script>
+</body>
+</html>

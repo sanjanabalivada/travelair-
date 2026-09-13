@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Select flight — TravelGuard Air</title>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<div class="topbar" id="topbar"></div>
+<div class="app-shell">
+  <div class="step-rail" id="stepRail"></div>
+  <h1 id="routeHeading">Bengaluru → Mumbai</h1>
+  <p class="lede" id="routeLede">3 flights found for 12 Sep 2026.</p>
+  <div id="flightList"></div>
+</div>
+<script src="app.js"></script>
+<script>
+  renderTopbar();
+  renderSteps(2);
+
+  const route = getBooking().route || { from: 'BLR', to: 'BOM' };
+  const cityName = code => (CITIES.find(c => c.code === code) || { name: code }).name;
+  document.getElementById('routeHeading').textContent = `${cityName(route.from)} → ${cityName(route.to)}`;
+
+  const list = document.getElementById('flightList');
+  const flights = flightsFor(route.from, route.to);
+  document.getElementById('routeLede').textContent = `${flights.length} flight${flights.length === 1 ? '' : 's'} found for 12 Sep 2026.`;
+
+  list.innerHTML = flights.map(f => `
+    <div class="flight-row">
+      <div>
+        <div class="route">${f.id} — ${f.depart} → ${f.arrive}</div>
+        <div class="meta">${f.from} to ${f.to} · Non-stop</div>
+      </div>
+      <div style="text-align:right">
+        <div class="price">₹${f.price.toLocaleString('en-IN')}</div>
+        <button class="btn secondary select-flight" data-id="${f.id}" style="margin-top:8px">Select</button>
+      </div>
+    </div>
+  `).join('');
+
+  list.querySelectorAll('.select-flight').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const flight = flights.find(f => f.id === btn.dataset.id);
+      setBooking({ flight });
+      window.location.href = 'passenger.html';
+    });
+  });
+</script>
+</body>
+</html>
